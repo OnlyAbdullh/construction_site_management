@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('concrete_pour_material', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('concrete_pour_id')->constrained('concrete_pours')->onDelete('cascade'); // references concrete pours
+            $table->foreignId('material_id')->constrained('materials')->onDelete('cascade'); // references materials
+            $table->decimal('quantity', 10, 2); // quantity of the material used in the concrete pour
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('concrete_pour_material');
+    }
+};
