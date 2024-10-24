@@ -21,7 +21,7 @@ class StoreSiteRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'coordinates' => 'required|string',
             'commissioning_date' => 'required|date',
@@ -32,5 +32,14 @@ class StoreSiteRequest extends FormRequest
             'sale_price' => 'nullable|numeric',
             'profit_or_loss_ratio' => 'nullable|numeric',
         ];
+
+        if ($this->isMethod('put') || $this->isMethod('patch')) {
+            // Change 'required' rules to 'sometimes' for update
+            foreach ($rules as $field => $rule) {
+                $rules[$field] = str_replace('required', 'sometimes', $rule);
+            }
+        }
+
+        return $rules;
     }
 }

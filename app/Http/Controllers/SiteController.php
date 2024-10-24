@@ -49,32 +49,40 @@ class SiteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Site $site)
     {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $site->load('materials.subMaterials');
+
+        return (new SiteResource($site))
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreSiteRequest $request, Site $site)
     {
-        //
+        $validated = $request->validated();
+        $site->fill($validated);
+        $site->save();
+
+        return (new SiteResource($site))
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Site $site)
     {
-        //
+        $site->delete();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Site deleted successfully.'
+        ], 200);
     }
 }
