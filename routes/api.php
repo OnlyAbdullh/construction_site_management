@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\SiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,3 +26,5 @@ Route::get('all', [MaterialController::class, 'index']);
 Route::get('/search/{internal_reference}', [MaterialController::class, 'search']);
 Route::get('/materiels/{materiel}', [MaterialController::class, 'show']);
 Route::put('/materials/{material}', [MaterialController::class, 'update']);
+
+Route::apiResource('sites', SiteController::class);

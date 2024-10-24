@@ -21,7 +21,7 @@ class Site extends Model
     ];
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'material_site')
+        return $this->belongsToMany(Material::class, 'site_materials')
             ->withPivot('quantity')
             ->withTimestamps();;
     }
@@ -30,4 +30,9 @@ class Site extends Model
     {
         return $this->hasMany(DeliveryPhase::class);
     }
+
+    protected $casts = [
+        'commissioning_date' => 'date',
+        'start_date' => 'date',
+    ];
 }

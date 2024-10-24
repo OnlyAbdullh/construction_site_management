@@ -28,7 +28,9 @@ class StoreSiteRequest extends FormRequest
             'start_date' => 'required|date',
             'delivery_status' => 'required|in:pending,in_progress,completed',
             'financial_closure_status' => 'required|in:open,closed',
-            //'sale_price' => 'nullable|numeric|min:0',
+            'capital' => 'required|numeric',
+            'sale_price' => 'nullable|numeric',
+            'profit_or_loss_ratio' => 'nullable|numeric',
         ];
     }
 }

@@ -14,9 +14,16 @@ class SiteController extends Controller
      */
     public function index()
     {
+        $sites = Site::with('materials.subMaterials')->get();
 
+        if ($sites->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No sites found.'
+            ], 404);
+        }
+        return SiteResource::collection($sites)->response()->setStatusCode(200);
     }
-
     /**
      * Store a newly created resource in storage.
      */

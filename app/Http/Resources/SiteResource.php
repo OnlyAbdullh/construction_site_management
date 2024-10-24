@@ -27,6 +27,7 @@ class SiteResource extends JsonResource
             'profit_or_loss_ratio'        => $this->whenNotNull($this->profit_or_loss_ratio),
             'created_at'                  => $this->created_at->toDateTimeString(),
             'updated_at'                  => $this->updated_at->toDateTimeString(),
+            'materials'                   => MaterialResource::collection($this->whenLoaded('materials')),
         ];
     }
 }
