@@ -31,6 +31,18 @@ class StoreSiteRequest extends FormRequest
             'capital' => 'required|numeric',
             'sale_price' => 'nullable|numeric',
             'profit_or_loss_ratio' => 'nullable|numeric',
+            // Validate materials array
+            'materials'               => 'sometimes|array',
+            'materials.*.id'          => 'required|exists:materials,id',
+            'materials.*.quantity'    => 'nullable|integer|min:1',
+
+            // Validate sub-materials for each material
+            'materials.*.sub_materials'          => 'sometimes|array',
+            'materials.*.sub_materials.*.name'   => 'required|string|max:255',
+            'materials.*.sub_materials.*.quantity'=> 'required|integer|min:1',
+            'materials.*.sub_materials.*.cost_price' => 'required|numeric|min:0',
+            'materials.*.sub_materials.*.sold_price' => 'nullable|numeric|min:0',
+            'materials.*.sub_materials.*.unit_measure' => 'required|string|max:50',
         ];
 
         if ($this->isMethod('put') || $this->isMethod('patch')) {
