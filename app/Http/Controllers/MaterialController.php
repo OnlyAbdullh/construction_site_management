@@ -50,9 +50,6 @@ class MaterialController extends Controller
     {
         return response()->json($materiel);
     }
-
-
-
     /**
      * Update the specified resource in storage.
      */

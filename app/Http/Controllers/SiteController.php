@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSiteRequest;
 use App\Http\Resources\SiteResource;
+use App\Models\Material;
 use App\Models\Site;
 use Illuminate\Http\Request;
 
@@ -29,21 +30,37 @@ class SiteController extends Controller
      */
     public function store(StoreSiteRequest $request)
     {
-        $validated = $request->validated();
+        $site = Site::create($request->validated());
 
-        $site = Site::create([
-            'name' => $validated['name'],
-            'coordinates' => $validated['coordinates'],
-            'commissioning_date' => $validated['commissioning_date'],
-            'start_date' => $validated['start_date'],
-            'delivery_status' => $validated['delivery_status'],
-            'financial_closure_status' => $validated['financial_closure_status'],
-            'capital' => $validated['capital'] ?? null,
-            'sale_price' => $validated['sale_price'] ?? null,
-            'profit_or_loss_ratio' => $validated['profit_or_loss_ratio'] ?? null,
-        ]);
+        if ($request->has('materials')) {
+            foreach ($request->materials as $material) {
+                $site->materials()->attach($material['id'], [
+                    'quantity' => $material['quantity'] ?? null
+                ]);
 
-        return new SiteResource($site);
+                // Step 3: Check if the material has sub-materials
+                if (isset($material['sub_materials'])) {
+                    foreach ($material['sub_materials'] as $subMaterial) {
+                        // Find the attached material in the database
+                        $existingMaterial = Material::find($material['id']);
+
+                        // Step 4: Attach/create sub-materials related to this material
+                        $existingMaterial->subMaterials()->create([
+                            'name' => $subMaterial['name'],
+                            'quantity' => $subMaterial['quantity'],
+                            'cost_price' => $subMaterial['cost_price'],
+                            'sold_price' => $subMaterial['sold_price'],
+                            'unit_measure' => $subMaterial['unit_measure'],
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'message' => 'Site created successfully with associated materials and sub-materials',
+            'site' => new SiteResource($site->load('materials.subMaterials'))  // Return the SiteResource with materials and sub-materials loaded
+        ], 201);
     }
 
     /**
@@ -83,6 +100,16 @@ class SiteController extends Controller
         return response()->json([
             'status' => 200,
             'message' => 'Site deleted successfully.'
+        ], 200);
+    }
+    public function deleteMaterial($siteId, $materialId)
+    {
+        $site = Site::findOrFail($siteId);
+
+        $site->materials()->detach($materialId);
+
+        return response()->json([
+            'message' => 'Material successfully detached from the site'
         ], 200);
     }
 }
