@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SubMaterialResource;
 use App\Models\SubMaterial;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,8 @@ class Sub_MaterialController extends Controller
      */
     public function index()
     {
-
+        $subMaterials = SubMaterial::paginate(20);
+        return SubMaterialResource::collection($subMaterials)->response()->setStatusCode(200);
     }
 
     /**

@@ -112,4 +112,27 @@ class SiteController extends Controller
             'message' => 'Material successfully detached from the site'
         ], 200);
     }
+    public function searchMaterialInSite($siteId, $internalReference)
+    {
+        $site = Site::find($siteId);
+
+        if (!$site) {
+            return response()->json([
+                'message' => 'Site not found'
+            ], 404);
+        }
+        $material = $site->materials()->where('materials.internal_reference', $internalReference)->first();
+
+        if ($material) {
+            return response()->json([
+                'message' => 'Material found in the site',
+                'material' => $material
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'Material not found in the site'
+        ], 404);
+    }
+
 }

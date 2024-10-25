@@ -27,4 +27,5 @@ Route::get('/search/{internal_reference}', [MaterialController::class, 'search']
 Route::apiResource('materials', MaterialController::class);
 Route::apiResource('sites', SiteController::class);
 Route::delete('/sites/{siteId}/materials/{materialId}', [SiteController::class, 'deleteMaterial']);
+Route::get('/sites/{siteId}/materials/{internal_reference}', [SiteController::class, 'searchMaterialInSite']);
 Route::apiResource('sub_materials', Sub_MaterialController::class);

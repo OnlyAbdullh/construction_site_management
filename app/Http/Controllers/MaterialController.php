@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\MaterielExport;
 use App\Http\Requests\ImportMaterielValidate;
+use App\Http\Resources\MaterialResource;
 use App\Imports\MaterielImport;
 use App\Models\Material;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class MaterialController extends Controller
     public function index()
     {
         $materiels = Material::paginate(20);
-        return response()->json($materiels);
+        return MaterialResource::collection($materiels)->response()->setStatusCode(200);
     }
     /**
      * Store a newly created resource in storage.
