@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\SubMaterialResource;
+use App\Models\Material;
 use App\Models\SubMaterial;
 use Illuminate\Http\Request;
 
@@ -17,13 +18,6 @@ class Sub_MaterialController extends Controller
         return SubMaterialResource::collection($subMaterials)->response()->setStatusCode(200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -38,7 +32,6 @@ class Sub_MaterialController extends Controller
             'sold_price' => 'nullable|numeric|min:0',
             'unit_measure' => 'required|string|max:50',
         ]);
-
         $materiel = SubMaterial::create($validated);
 
         return response()->json([
@@ -48,36 +41,70 @@ class Sub_MaterialController extends Controller
         ], 201);
     }
 
-
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($materialId, $subMaterialId)
     {
-        //
+        $material = Material::findOrFail($materialId);
+        $subMaterial = $material->subMaterials()->find($subMaterialId);
+
+        if (!$subMaterial) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'SubMaterial not found for this Material.'
+            ], 404);
+        }
+
+        // Use the API Resource to return the formatted data
+        return new SubMaterialResource($subMaterial);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, SubMaterial $subMaterial)
     {
-        //
+        $validated = $request->validate([
+            'material_id' => 'sometimes|exists:materials,id',
+            'name' => 'sometimes|string|max:255',
+            'quantity' => 'sometimes|integer|min:1',
+            'cost_price' => 'sometimes|numeric|min:0',
+            'sold_price' => 'sometimes|numeric|min:0|nullable',
+            'unit_measure' => 'sometimes|string|max:50',
+        ]);
+
+        $subMaterial->update($validated);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Material updated successfully.',
+            'data' => $subMaterial
+        ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroySubMaterialInMaterial($internalReference, $subMaterialId)
     {
-        //
+        $material = Material::where('internal_reference', $internalReference)->firstOrFail();
+
+        $subMaterial = $material->subMaterials()->find($subMaterialId);
+
+        if (!$subMaterial) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'SubMaterial not found for this Material.'
+            ], 404);
+        }
+
+        $subMaterial->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'SubMaterial deleted successfully.'
+        ], 200);
     }
 }

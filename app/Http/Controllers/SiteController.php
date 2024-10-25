@@ -104,7 +104,13 @@ class SiteController extends Controller
     }
     public function deleteMaterial($siteId, $materialId)
     {
-        $site = Site::findOrFail($siteId);
+        $site = Site::find($siteId);
+
+        if (!$site) {
+            return response()->json([
+                'message' => 'Site not found'
+            ], 404);
+        }
 
         $site->materials()->detach($materialId);
 
@@ -134,5 +140,4 @@ class SiteController extends Controller
             'message' => 'Material not found in the site'
         ], 404);
     }
-
 }
