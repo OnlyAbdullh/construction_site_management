@@ -25,6 +25,7 @@ class SiteController extends Controller
         }
         return SiteResource::collection($sites)->response()->setStatusCode(200);
     }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -102,6 +103,7 @@ class SiteController extends Controller
             'message' => 'Site deleted successfully.'
         ], 200);
     }
+
     public function deleteMaterial($siteId, $materialId)
     {
         $site = Site::find($siteId);
@@ -118,6 +120,7 @@ class SiteController extends Controller
             'message' => 'Material successfully detached from the site'
         ], 200);
     }
+
     public function searchMaterialInSite($siteId, $internalReference)
     {
         $site = Site::find($siteId);
@@ -139,5 +142,60 @@ class SiteController extends Controller
         return response()->json([
             'message' => 'Material not found in the site'
         ], 404);
+    }
+
+    public function addMaterialToSite(Request $request, $siteId)
+    {
+        $request->validate([
+            'material_id' => 'required|exists:materials,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+        $site = Site::find($siteId);
+
+        if (!$site) {
+            return response()->json([
+                'message' => 'Site not found'
+            ], 404);
+        }
+        $material = Material::findOrFail($request->input('material_id'));
+
+        if (!$site->materials()->where('material_id', $material->id)->exists()) {
+            $site->materials()->attach($material->id, ['quantity' => $request->input('quantity')]);
+        }
+
+        return response()->json([
+            'message' => 'Material added to site successfully.',
+            'site' => $site->load('materials')
+        ], 200);
+    }
+
+    public function search(Request $request)
+    {
+        $query = Site::query();
+
+        if ($request->has('name')) {
+            $query->where('name', 'like', '%' . $request->input('name') . '%');
+        }
+        if ($request->has('profit_or_loss_ratio')) {
+            $query->where('profit_or_loss_ratio', '>=', $request->input('profit_or_loss_ratio'));
+        }
+        if ($request->has('delivery_status')) {
+            $query->where('delivery_status', 'like', '%' . $request->input('delivery_status') . '%');
+        }
+        if ($request->has('financial_closure_status')) {
+            $query->where('financial_closure_status', 'like', '%' . $request->input('financial_closure_status') . '%');
+        }
+        if ($request->has('min_capital') && $request->has('max_capital')) {
+            $query->whereBetween('capital', [$request->input('min_capital'), $request->input('max_capital')]);
+        }
+        $sites = $query->with('materials.subMaterials')->get();
+
+        if ($sites->isEmpty()) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'No sites found matching the criteria.'
+            ], 404);
+        }
+        return SiteResource::collection($sites)->response()->setStatusCode(200);
     }
 }

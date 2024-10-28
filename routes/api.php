@@ -21,12 +21,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('export-excel', [MaterialController::class, 'export']);
-Route::post('import-excel', [MaterialController::class, 'import']);
+/*Route::get('export-excel', [MaterialController::class, 'export']);
+Route::post('import-excel', [MaterialController::class, 'import']);*/
 Route::get('/search/{internal_reference}', [MaterialController::class, 'search']);
 Route::apiResource('materials', MaterialController::class);
 Route::apiResource('sites', SiteController::class);
+Route::post('/sites/{siteId}/materials', [SiteController::class, 'addMaterialToSite']);
 Route::delete('/sites/{siteId}/materials/{internal_reference}', [SiteController::class, 'deleteMaterial']);
 Route::get('/sites/{siteId}/materials/{internal_reference}', [SiteController::class, 'searchMaterialInSite']);
 Route::apiResource('sub_materials', Sub_MaterialController::class);
 Route::delete('/materials/{internal_reference}/sub_materials/{id}', [Sub_MaterialController::class, 'destroySubMaterialInMaterial']);
+Route::match(['get', 'post'], '/sites/search', [SiteController::class, 'search']);
