@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\delivery_phasesController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\Sub_MaterialController;
@@ -32,3 +33,11 @@ Route::get('/sites/{siteId}/materials/{internal_reference}', [SiteController::cl
 Route::apiResource('sub_materials', Sub_MaterialController::class);
 Route::delete('/materials/{internal_reference}/sub_materials/{id}', [Sub_MaterialController::class, 'destroySubMaterialInMaterial']);
 Route::match(['get', 'post'], '/sites/search', [SiteController::class, 'search']);
+
+Route::prefix('sites/{site}')->group(function () {
+    Route::get('/delivery-phases', [delivery_phasesController::class, 'index']);
+    Route::post('/delivery-phases', [delivery_phasesController::class, 'store']);
+    Route::get('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'show']);
+    Route::put('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'update']);
+    Route::delete('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'destroy']);
+});
