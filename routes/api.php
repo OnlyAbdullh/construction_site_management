@@ -22,22 +22,31 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-/*Route::get('export-excel', [MaterialController::class, 'export']);
-Route::post('import-excel', [MaterialController::class, 'import']);*/
+// Material-related routes
+Route::get('export-excel', [MaterialController::class, 'export']);
+Route::post('import-excel', [MaterialController::class, 'import']);
 Route::get('/search/{internal_reference}', [MaterialController::class, 'search']);
 Route::apiResource('materials', MaterialController::class);
-Route::apiResource('sites', SiteController::class);
-Route::post('/sites/{siteId}/materials', [SiteController::class, 'addMaterialToSite']);
-Route::delete('/sites/{siteId}/materials/{internal_reference}', [SiteController::class, 'deleteMaterial']);
-Route::get('/sites/{siteId}/materials/{internal_reference}', [SiteController::class, 'searchMaterialInSite']);
+
+// Sub-material-related routes
 Route::apiResource('sub_materials', Sub_MaterialController::class);
 Route::delete('/materials/{internal_reference}/sub_materials/{id}', [Sub_MaterialController::class, 'destroySubMaterialInMaterial']);
-Route::match(['get', 'post'], '/sites/search', [SiteController::class, 'search']);
 
-Route::prefix('sites/{site}')->group(function () {
-    Route::get('/delivery-phases', [delivery_phasesController::class, 'index']);
-    Route::post('/delivery-phases', [delivery_phasesController::class, 'store']);
-    Route::get('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'show']);
-    Route::put('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'update']);
-    Route::delete('/delivery-phases/{deliveryPhase}', [delivery_phasesController::class, 'destroy']);
+// Site-related routes
+Route::prefix('sites')->controller(SiteController::class)->group(function () {
+    Route::apiResource('/', SiteController::class)->parameters(['' => 'site']);
+    Route::post('{siteId}/materials', 'addMaterialToSite');
+    Route::delete('{siteId}/materials/{internal_reference}', 'deleteMaterial');
+    Route::get('{siteId}/materials/{internal_reference}', 'searchMaterialInSite');
+    Route::match(['get', 'post'], 'search', 'search');
+    Route::get('{site}/calculate-capital', 'calculate_capital');
+    Route::get('{site}/calculate-price', 'calculate_price');
+});
+// Delivery phases-related routes within a site
+Route::prefix('sites/{site}')->controller(DeliveryPhasesController::class)->group(function () {
+    Route::get('/delivery-phases', 'index');
+    Route::post('/delivery-phases', 'store');
+    Route::get('/delivery-phases/{deliveryPhase}', 'show');
+    Route::put('/delivery-phases/{deliveryPhase}', 'update');
+    Route::delete('/delivery-phases/{deliveryPhase}', 'destroy');
 });

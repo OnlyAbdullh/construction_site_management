@@ -198,4 +198,36 @@ class SiteController extends Controller
         }
         return SiteResource::collection($sites)->response()->setStatusCode(200);
     }
+    public function calculate_capital(Site $site)
+    {
+        $capital = $site->materials->sum(function ($material) {
+            $materialCost = $material->unit_cost_price * $material->pivot->quantity;
+
+            $subMaterialCost = $material->subMaterials->sum(function ($subMaterial)  {
+                return $subMaterial->cost_price * $subMaterial->quantity;
+            });
+            return $materialCost + $subMaterialCost;
+        });
+
+        return response()->json([
+            "The Capital of the site is" => $capital,
+        ], 201);
+    }
+    public function calculate_price(Site $site)
+    {
+        $price = $site->materials->sum(function ($material) {
+            $materialPrice = $material->price * $material->pivot->quantity;
+
+            $subMaterialPrice = $material->subMaterials->sum(function ($subMaterial) {
+                return $subMaterial->price * $subMaterial->quantity;
+            });
+
+
+            return $materialPrice + $subMaterialPrice;
+        });
+
+        return response()->json([
+            "The price of the site is" => $price,
+        ], 201);
+    }
 }
