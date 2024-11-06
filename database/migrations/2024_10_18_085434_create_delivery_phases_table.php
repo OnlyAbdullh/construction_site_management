@@ -16,6 +16,12 @@ return new class extends Migration
             $table->foreignId('site_id')->constrained('sites')->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date')->nullable();
+            $table->boolean('preliminary_invoice')->default(false);
+            $table->enum('technical_receipt', ['delivered', 'delivered_with_notes', 'not_delivered'])->default('not_delivered');
+            $table->boolean('technical_receipt_invoice')->default(false);
+            $table->enum('final_receipt', ['delivered', 'delivered_with_notes', 'not_delivered'])->default('not_delivered');
+            $table->boolean('final_receipt_invoice')->default(false);
+            $table->enum('delivery_status', ['delivered', 'in_progress', 'not_delivered'])->default('not_delivered');
             $table->enum('delivery_status', ['delivered', 'in_progress', 'not_delivered'])->default('not_delivered');
             $table->timestamps();
         });
