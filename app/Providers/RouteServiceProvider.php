@@ -29,10 +29,14 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
+            // Load all files in the routes/api directory
+            foreach (glob(base_path('routes/api/*.php')) as $routeFile) {
+                Route::middleware('api')
+                    ->prefix('api')
+                    ->group($routeFile);
+            }
 
+            // Load the web routes as usual
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });

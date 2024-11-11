@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('concrete_pour_id')->constrained('concrete_pours')->onDelete('cascade'); // references concrete pours
             $table->foreignId('material_id')->constrained('materials')->onDelete('cascade'); // references materials
-            $table->decimal('quantity', 10, 2); // quantity of the material used in the concrete pour
             $table->timestamps();
         });
     }

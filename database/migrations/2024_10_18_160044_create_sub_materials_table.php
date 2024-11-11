@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('material_id')->constrained('materials')->onDelete('cascade');
             $table->string('name');
+            $table->decimal('rate_per_cubic_meter',10,2);
             $table->integer('quantity');
             $table->decimal('cost_price', 10, 2);
             $table->decimal('sold_price', 10, 2);
