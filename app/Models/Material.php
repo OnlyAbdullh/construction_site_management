@@ -16,7 +16,6 @@ class Material extends Model
         'unit_measure',
         'price',
         'notes',
-        'unit_cost_price',
     ];
 
     public function getRouteKeyName()
@@ -42,5 +41,9 @@ class Material extends Model
         return $this->belongsToMany(ConcretePour::class, 'concrete_pour_material')
             ->withPivot('quantity') // to track the quantity of material used in the pour
             ->withTimestamps();
+    }
+    public function histories()
+    {
+        return $this->hasMany(MaterialCapitalHistory::class);
     }
 }

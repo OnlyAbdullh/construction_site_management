@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('materials', function (Blueprint $table) {
+        Schema::create('material_capital_histories', function (Blueprint $table) {
             $table->id();
-            $table->string('internal_reference');
-            $table->string('name');
-            $table->string('product_category');
-            $table->string('unit_measure')->nullable();
-            $table->string('price')->nullable();
-            $table->text('notes')->nullable();
+            $table->foreignId('material_id')->constrained()->onDelete('cascade');
+            $table->decimal('capital', 15, 2);
+            $table->decimal('quantity', 10, 2);
+            $table->date('entry_date');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('materials');
+        Schema::dropIfExists('material_capital_histories');
     }
 };
