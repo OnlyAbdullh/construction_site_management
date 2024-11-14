@@ -42,8 +42,4 @@ class Material extends Model
             ->withPivot('quantity') // to track the quantity of material used in the pour
             ->withTimestamps();
     }
-    public function histories()
-    {
-        return $this->hasMany(MaterialCapitalHistory::class);
-    }
 }
