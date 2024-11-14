@@ -20,4 +20,8 @@ class SubMaterial extends Model
     {
         return $this->belongsTo(Material::class);
     }
+    public function capitalHistories()
+    {
+        return $this->morphMany(CapitalHistory::class, 'recordable');
+    }
 }
