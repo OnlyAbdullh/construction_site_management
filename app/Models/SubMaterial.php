@@ -20,8 +20,20 @@ class SubMaterial extends Model
     {
         return $this->belongsTo(Material::class);
     }
+    public function priceHistories()
+    {
+        return $this->morphMany(PriceHistory::class, 'recordable');
+    }
+
     public function capitalHistories()
     {
-        return $this->morphMany(CapitalHistory::class, 'recordable');
+        return $this->priceHistories()->where('type', 'capital');
+    }
+
+    public function soldHistories()
+    {
+        return $this->priceHistories()->where('type', 'sold');
     }
 }
+//php artisan generate:erd
+// composer require beyondcode/laravel-er-diagram-generator --dev

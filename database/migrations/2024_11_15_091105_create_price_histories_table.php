@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('capital_histories', function (Blueprint $table) {
+        Schema::create('price_histories', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('recordable_id'); // ID for the related material or sub-material
             $table->string('recordable_type');           // Type of the related model (material or sub-material)
-            $table->decimal('capital', 15, 2);
-            $table->decimal('quantity',10,2);
-            $table->index(['recordable_id', 'recordable_type']);
+            $table->enum('type', ['capital', 'sold']);   // Record type: 'capital' or 'sold'
+            $table->decimal('price', 15, 2);
+            $table->decimal('quantity', 10, 2)->nullable();
             $table->date('entry_date');
+            $table->index(['recordable_id', 'recordable_type']);
             $table->timestamps();
         });
     }
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('capital_histories');
+        Schema::dropIfExists('price_histories');
     }
 };
