@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\SubMaterialResource;
+use App\Models\ConcretePours;
 use App\Models\Material;
+use App\Models\Site;
 use App\Models\SubMaterial;
+use Decimal\Decimal;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Calculation\Logical\Boolean;
 
 class Sub_MaterialController extends Controller
 {
@@ -106,5 +110,89 @@ class Sub_MaterialController extends Controller
             'status' => 'success',
             'message' => 'SubMaterial deleted successfully.'
         ], 200);
+    }
+    public function setQuantity(Request $request)
+    {
+        $site_id = $request->site_id;
+        $concrete_pour_id = $request->concrete_pour_id;
+        $material_id = $request->material_id;
+        $sub_material_id = $request->sub_material_id;
+        $is_related = $request->is_related;
+        $direct = $request->direct;
+        $quantity = $request->quantity;
+
+        $site = Site::findOrFail($site_id);
+
+        if ($is_related) {
+            // SubMaterial related to Concrete Pour
+            if ($direct) {
+                // Direct relationship path: Site -> ConcretePour -> Material -> SubMaterial
+                $concretePour = $site->concretePours()
+                    ->where('id', $concrete_pour_id)
+                    ->firstOrFail();
+
+                $material = $concretePour->materials()
+                    ->where('materials.id', $material_id)
+                    ->first();
+
+                if ($material) {
+                    $subMaterial = $material->subMaterials()
+                        ->where('sub_materials.id', $sub_material_id)
+                        ->first();
+
+                    if ($subMaterial) {
+
+                        $subMaterial->update(['quantity' => $quantity]);
+                    } else {
+                        return response()->json(['message' => 'Sub-material not found.'], 404);
+                    }
+                } else {
+                    return response()->json(['message' => 'Material not found for this concrete pour.'], 404);
+                }
+            } else {
+
+                $concretePour = ConcretePour::where('id', $concrete_pour_id)
+                    ->where('site_id', $site->id)
+                    ->firstOrFail();
+
+                $material = Material::findOrFail($material_id);
+                $subMaterial = $material->subMaterials()
+                    ->where('sub_materials.id', $sub_material_id)
+                    ->firstOrFail();
+
+
+                $rate = $subMaterial->rate ?? 1;
+                $dimensions = $concretePour->length * $concretePour->width * $concretePour->height;
+                $calculatedQuantity = $dimensions * $rate;
+
+                // Update calculated quantity directly on the sub_material model
+                $subMaterial->update(['quantity' => $calculatedQuantity]);
+            }
+        } else {
+            // SubMaterial not related to Concrete Pour
+            $material = $site->materials()
+                ->where('materials.id', $material_id)
+                ->first();
+
+            if ($material) {
+                $subMaterial = $material->subMaterials()
+                    ->where('sub_materials.id', $sub_material_id)
+                    ->first();
+
+                if ($subMaterial) {
+                    // Update quantity directly on the sub_material model
+                    $subMaterial->update(['quantity' => $quantity]);
+                } else {
+                    return response()->json(['message' => 'Sub-material not found.'], 404);
+                }
+            } else {
+                return response()->json(['message' => 'Material not found for this site.'], 404);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Quantity set successfully.',
+            'sub_material' => $subMaterial,
+        ]);
     }
 }

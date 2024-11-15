@@ -222,7 +222,6 @@ class SiteController extends Controller
                 return $subMaterial->price * $subMaterial->quantity;
             });
 
-
             return $materialPrice + $subMaterialPrice;
         });
 
