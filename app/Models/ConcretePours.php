@@ -14,4 +14,8 @@ class ConcretePours extends Model
             ->withPivot('quantity') // to track the quantity of material used in the pour
             ->withTimestamps();
     }
+    public function site()
+    {
+        return $this->belongsTo(Site::class);
+    }
 }

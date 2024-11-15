@@ -30,6 +30,10 @@ class Site extends Model
     {
         return $this->hasMany(DeliveryPhase::class);
     }
+    public function concretePours()
+    {
+        return $this->hasMany(ConcretePours::class);
+    }
 
     protected $casts = [
         'commissioning_date' => 'date',

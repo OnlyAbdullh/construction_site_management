@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('final_receipt_invoice')->default(false);
             $table->enum('delivery_status', ['delivered', 'in_progress', 'not_delivered'])->default('not_delivered');
             $table->enum('delivery_status', ['delivered', 'in_progress', 'not_delivered'])->default('not_delivered');
+            $table->integer('orderNum')->default(1);
             $table->timestamps();
         });
     }
