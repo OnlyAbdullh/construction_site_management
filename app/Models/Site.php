@@ -21,9 +21,7 @@ class Site extends Model
     ];
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'site_materials')
-            ->withPivot('quantity')
-            ->withTimestamps();;
+        return $this->belongsToMany(Material::class, 'site_materials');
     }
 
     public function deliveryPhases()

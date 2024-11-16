@@ -36,9 +36,7 @@ class Material extends Model
 
     public function concretePours()
     {
-        return $this->belongsToMany(ConcretePour::class, 'concrete_pour_material')
-            ->withPivot('quantity') // to track the quantity of material used in the pour
-            ->withTimestamps();
+        return $this->belongsToMany(ConcretePour::class, 'concrete_pour_material');
     }
     public function priceHistories()
     {
