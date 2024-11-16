@@ -144,12 +144,8 @@ class SiteController extends Controller
         ], 404);
     }
 
-    public function addMaterialToSite(Request $request, $siteId)
+    public function addMaterialToSite(Material $material, $siteId)
     {
-        $request->validate([
-            'material_id' => 'required|exists:materials,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
         $site = Site::find($siteId);
 
         if (!$site) {
@@ -157,10 +153,9 @@ class SiteController extends Controller
                 'message' => 'Site not found'
             ], 404);
         }
-        $material = Material::findOrFail($request->input('material_id'));
 
         if (!$site->materials()->where('material_id', $material->id)->exists()) {
-            $site->materials()->attach($material->id, ['quantity' => $request->input('quantity')]);
+            $site->materials()->attach($material->id);
         }
 
         return response()->json([
