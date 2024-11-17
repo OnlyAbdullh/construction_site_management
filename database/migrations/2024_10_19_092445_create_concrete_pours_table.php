@@ -22,7 +22,6 @@ return new class extends Migration
         Schema::create('concrete_pours', function (Blueprint $table) {
             $table->id();
             $table->foreignId('site_id')->constrained('sites')->onDelete('cascade');
-            $table->foreignId('material_id')->constrained('materials')->onDelete('cascade');
             $table->decimal('length', 10, 2);
             $table->decimal('width', 10, 2);
             $table->decimal('height', 10, 2);

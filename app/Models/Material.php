@@ -36,7 +36,7 @@ class Material extends Model
 
     public function concretePours()
     {
-        return $this->belongsToMany(ConcretePour::class, 'concrete_pour_material');
+        return $this->belongsToMany(ConcretePours::class, 'concrete_pour_material')->withTimestamps();
     }
     public function priceHistories()
     {

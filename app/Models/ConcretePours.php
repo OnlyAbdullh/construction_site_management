@@ -9,16 +9,11 @@ class ConcretePours extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'height',
-        'length',
-        'width',
-        'name',
-    ];
+    protected $fillable = ['name', 'length', 'width', 'height', 'site_id'];
 
     public function materials()
     {
-        return $this->belongsToMany(Material::class, 'concrete_pour_material');
+        return $this->belongsToMany(Material::class, 'concrete_pour_material')->withTimestamps();
     }
 
     public function site()
