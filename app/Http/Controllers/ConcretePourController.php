@@ -39,4 +39,41 @@ class ConcretePourController extends Controller
     }
 
 
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, ConcretePours $concretePour)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'length' => 'sometimes|numeric|min:0',
+            'width' => 'sometimes|numeric|min:0',
+            'height' => 'sometimes|numeric|min:0',
+        ]);
+
+        $concretePour->update($validated);
+
+        return response()->json([
+            'message' => 'Concrete pour updated successfully.',
+            'data' => $concretePour
+        ], 200);
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(ConcretePours $concretePour)
+    {
+        // Detach materials to clean up pivot table
+     //   $concretePour->materials()->detach();
+
+        $concretePour->delete();
+
+        return response()->json([
+            'message' => 'Concrete pour deleted successfully.'
+        ], 200);
+    }
+
+
 }
