@@ -32,32 +32,6 @@ class SiteController extends Controller
     public function store(StoreSiteRequest $request)
     {
         $site = Site::create($request->validated());
-
-        if ($request->has('materials')) {
-            foreach ($request->materials as $material) {
-                $site->materials()->attach($material['id'], [
-                    'quantity' => $material['quantity'] ?? null
-                ]);
-
-                // Step 3: Check if the material has sub-materials
-                if (isset($material['sub_materials'])) {
-                    foreach ($material['sub_materials'] as $subMaterial) {
-                        // Find the attached material in the database
-                        $existingMaterial = Material::find($material['id']);
-
-                        // Step 4: Attach/create sub-materials related to this material
-                        $existingMaterial->subMaterials()->create([
-                            'name' => $subMaterial['name'],
-                            'quantity' => $subMaterial['quantity'],
-                            'cost_price' => $subMaterial['cost_price'],
-                            'sold_price' => $subMaterial['sold_price'],
-                            'unit_measure' => $subMaterial['unit_measure'],
-                        ]);
-                    }
-                }
-            }
-        }
-
         return response()->json([
             'message' => 'Site created successfully with associated materials and sub-materials',
             'site' => new SiteResource($site->load('materials.subMaterials'))  // Return the SiteResource with materials and sub-materials loaded
@@ -69,7 +43,6 @@ class SiteController extends Controller
      */
     public function show(Site $site)
     {
-
         $site->load('materials.subMaterials');
 
         return (new SiteResource($site))
@@ -96,6 +69,8 @@ class SiteController extends Controller
      */
     public function destroy(Site $site)
     {
+        // Detach all related materials
+        $site->materials()->detach();
         $site->delete();
 
         return response()->json([

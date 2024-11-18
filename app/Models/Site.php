@@ -10,6 +10,7 @@ class Site extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'code',
         'coordinates',
         'commissioning_date',
         'start_date',

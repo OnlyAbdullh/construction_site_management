@@ -21,37 +21,37 @@ class StoreSiteRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = [
+        if ($this->isUpdateRequest()) {
+            // For updates, validate fields only if they are present
+            return [
+                'name' => 'sometimes|string|max:255',
+                'code' => 'sometimes|string|max:50',
+                'coordinates' => 'sometimes|string',
+                'commissioning_date' => 'sometimes|date',
+                'start_date' => 'sometimes|date',
+                'delivery_status' => 'sometimes|in:pending,in_progress,completed',
+                'financial_closure_status' => 'sometimes|in:open,closed',
+                'profit_or_loss_ratio' => 'nullable|numeric',
+            ];
+        }
+
+        // For storing, all fields must be required
+        return [
             'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50',
             'coordinates' => 'required|string',
             'commissioning_date' => 'required|date',
             'start_date' => 'required|date',
-            'delivery_status' => 'required|in:pending,in_progress,completed',
-            'financial_closure_status' => 'required|in:open,closed',
-            'capital' => 'required|numeric',
-            'sale_price' => 'nullable|numeric',
-            'profit_or_loss_ratio' => 'nullable|numeric',
-            // Validate materials array
-            'materials'               => 'sometimes|array',
-            'materials.*.id'          => 'required|exists:materials,id',
-            'materials.*.quantity'    => 'nullable|integer|min:1',
-
-            // Validate sub-materials for each material
-            'materials.*.sub_materials'          => 'sometimes|array',
-            'materials.*.sub_materials.*.name'   => 'required|string|max:255',
-            'materials.*.sub_materials.*.quantity'=> 'required|integer|min:1',
-            'materials.*.sub_materials.*.cost_price' => 'required|numeric|min:0',
-            'materials.*.sub_materials.*.sold_price' => 'nullable|numeric|min:0',
-            'materials.*.sub_materials.*.unit_measure' => 'required|string|max:50',
         ];
+    }
 
-        if ($this->isMethod('put') || $this->isMethod('patch')) {
-            // Change 'required' rules to 'sometimes' for update
-            foreach ($rules as $field => $rule) {
-                $rules[$field] = str_replace('required', 'sometimes', $rule);
-            }
-        }
-
-        return $rules;
+    /**
+     * Determine if the current request is for updating a site.
+     *
+     * @return bool
+     */
+    private function isUpdateRequest(): bool
+    {
+        return $this->isMethod('put') || $this->isMethod('patch');
     }
 }
