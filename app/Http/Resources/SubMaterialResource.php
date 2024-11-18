@@ -18,12 +18,10 @@ class SubMaterialResource extends JsonResource
             'id'            => $this->id,
             'material_id'   => $this->material_id,
             'name'          => $this->name,
-            'quantity'      => $this->quantity,
-            'cost_price'    => $this->cost_price,
-            'sold_price'    => $this->sold_price,
             'unit_measure'  => $this->unit_measure,
             'created_at'    => $this->created_at->toDateTimeString(),
             'updated_at'    => $this->updated_at->toDateTimeString(),
+            'price_histories' => PriceHistoryResource::collection($this->whenLoaded('priceHistories')),
         ];
     }
 }

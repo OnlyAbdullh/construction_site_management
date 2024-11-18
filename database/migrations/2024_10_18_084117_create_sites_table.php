@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('sites', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('code', 50)->unique()->nullable(false);
             $table->string('coordinates');
             $table->date('commissioning_date');
             $table->date('start_date');
             $table->enum('delivery_status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->enum('financial_closure_status', ['open', 'closed'])->default('open');
-            $table->decimal('capital', 15);
+            $table->decimal('capital', 15)->nullable();
             $table->decimal('sale_price', 15)->nullable();
             $table->decimal('profit_or_loss_ratio', 5, 2)->nullable();
             $table->timestamps();
