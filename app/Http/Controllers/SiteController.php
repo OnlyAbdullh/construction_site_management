@@ -15,7 +15,7 @@ class SiteController extends Controller
      */
     public function index()
     {
-        $sites = Site::with('materials.subMaterials')->get();
+        $sites = Site::paginate(10);
 
         if ($sites->isEmpty()) {
             return response()->json([
@@ -23,8 +23,16 @@ class SiteController extends Controller
                 'message' => 'No sites found.'
             ], 404);
         }
-        return SiteResource::collection($sites)->response()->setStatusCode(200);
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Sites retrieved successfully.',
+            'data' => SiteResource::collection($sites)->map(function ($site) {
+                return $site->toBasicArray(request());
+            })
+        ], 200);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -32,9 +40,11 @@ class SiteController extends Controller
     public function store(StoreSiteRequest $request)
     {
         $site = Site::create($request->validated());
+
         return response()->json([
-            'message' => 'Site created successfully with associated materials and sub-materials',
-            'site' => new SiteResource($site->load('materials.subMaterials'))  // Return the SiteResource with materials and sub-materials loaded
+            'status' => 201,
+            'message' => 'Site created successfully with associated materials and sub-materials.',
+            'data' => new SiteResource($site->load('materials.subMaterials'))
         ], 201);
     }
 
@@ -43,11 +53,16 @@ class SiteController extends Controller
      */
     public function show(Site $site)
     {
-        $site->load('materials.subMaterials');
-
-        return (new SiteResource($site))
-            ->response()
-            ->setStatusCode(200);
+        $site->load([
+            'materials.subMaterials',
+            'materials.priceHistories',  // Load priceHistories for materials
+            'materials.subMaterials.priceHistories'  // Load priceHistories for subMaterials
+        ]);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Site retrieved successfully.',
+            'data' => new SiteResource($site)
+        ], 200);
     }
 
     /**
@@ -56,12 +71,13 @@ class SiteController extends Controller
     public function update(StoreSiteRequest $request, Site $site)
     {
         $validated = $request->validated();
-        $site->fill($validated);
-        $site->save();
+        $site->update($validated);
 
-        return (new SiteResource($site))
-            ->response()
-            ->setStatusCode(200);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Site updated successfully.',
+            'data' => new SiteResource($site)
+        ], 200);
     }
 
     /**
@@ -81,12 +97,12 @@ class SiteController extends Controller
 
     public function deleteMaterial($siteId, $material_id)
     {
-        // Find the site by its ID
         $site = Site::find($siteId);
 
         if (!$site) {
             return response()->json([
-                'message' => 'Site not found'
+                'status' => 404,
+                'message' => 'Site not found.'
             ], 404);
         }
 
@@ -94,36 +110,43 @@ class SiteController extends Controller
 
         if (!$material) {
             return response()->json([
-                'message' => 'Material not found'
+                'status' => 404,
+                'message' => 'Material not found.'
             ], 404);
         }
+
         $site->materials()->detach($material->id);
 
         return response()->json([
-            'message' => 'Material successfully detached from the site'
+            'status' => 200,
+            'message' => 'Material successfully detached from the site.'
         ], 200);
     }
 
-    public function searchMaterialInSite($siteId, $internalReference)
+    public function searchMaterialInSite($siteId, $internal_reference)
     {
         $site = Site::find($siteId);
 
         if (!$site) {
             return response()->json([
-                'message' => 'Site not found'
+                'status' => 404,
+                'message' => 'Site not found.'
             ], 404);
         }
-        $material = $site->materials()->where('materials.internal_reference', $internalReference)->first();
+
+        $material = $site->materials()->where('materials.internal_reference', $internal_reference)->first();
 
         if ($material) {
             return response()->json([
-                'message' => 'Material found in the site',
-                'material' => $material
+                'status' => 200,
+                'message' => 'Material found in the site.',
+                'data' => $material
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Material not found in the site'
+            'status' => 404,
+            'message' => 'Material not found in the site.'
         ], 404);
     }
 
@@ -131,13 +154,22 @@ class SiteController extends Controller
     {
         $material = Material::where('internal_reference', $material_id)->first();
 
+        if (!$material) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Material not found.'
+            ], 404);
+        }
+
         if (!$site->materials()->where('material_id', $material->id)->exists()) {
             $site->materials()->attach($material->id);
         }
+
         return response()->json([
+            'status' => 200,
             'message' => 'Material added successfully.',
-            'site' => $site->load('materials'),
-        ]);
+            'data' => new SiteResource($site->load('materials'))
+        ], 200);
     }
 
     public function search(Request $request)
