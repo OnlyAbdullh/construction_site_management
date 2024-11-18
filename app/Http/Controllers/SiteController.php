@@ -79,8 +79,9 @@ class SiteController extends Controller
         ], 200);
     }
 
-    public function deleteMaterial($siteId, $materialId)
+    public function deleteMaterial($siteId, $material_id)
     {
+        // Find the site by its ID
         $site = Site::find($siteId);
 
         if (!$site) {
@@ -89,7 +90,14 @@ class SiteController extends Controller
             ], 404);
         }
 
-        $site->materials()->detach($materialId);
+        $material = Material::where('internal_reference', $material_id)->first();
+
+        if (!$material) {
+            return response()->json([
+                'message' => 'Material not found'
+            ], 404);
+        }
+        $site->materials()->detach($material->id);
 
         return response()->json([
             'message' => 'Material successfully detached from the site'
@@ -119,24 +127,17 @@ class SiteController extends Controller
         ], 404);
     }
 
-    public function addMaterialToSite(Material $material, $siteId)
+    public function addMaterialToSite(Site $site, $material_id)
     {
-        $site = Site::find($siteId);
-
-        if (!$site) {
-            return response()->json([
-                'message' => 'Site not found'
-            ], 404);
-        }
+        $material = Material::where('internal_reference', $material_id)->first();
 
         if (!$site->materials()->where('material_id', $material->id)->exists()) {
             $site->materials()->attach($material->id);
         }
-
         return response()->json([
-            'message' => 'Material added to site successfully.',
-            'site' => $site->load('materials')
-        ], 200);
+            'message' => 'Material added successfully.',
+            'site' => $site->load('materials'),
+        ]);
     }
 
     public function search(Request $request)
@@ -168,12 +169,13 @@ class SiteController extends Controller
         }
         return SiteResource::collection($sites)->response()->setStatusCode(200);
     }
+
     public function calculate_capital(Site $site)
     {
         $capital = $site->materials->sum(function ($material) {
             $materialCost = $material->unit_cost_price * $material->pivot->quantity;
 
-            $subMaterialCost = $material->subMaterials->sum(function ($subMaterial)  {
+            $subMaterialCost = $material->subMaterials->sum(function ($subMaterial) {
                 return $subMaterial->cost_price * $subMaterial->quantity;
             });
             return $materialCost + $subMaterialCost;
@@ -183,6 +185,7 @@ class SiteController extends Controller
             "The Capital of the site is" => $capital,
         ], 201);
     }
+
     public function calculate_price(Site $site)
     {
         $price = $site->materials->sum(function ($material) {
