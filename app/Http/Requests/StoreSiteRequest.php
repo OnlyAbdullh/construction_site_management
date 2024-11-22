@@ -31,7 +31,6 @@ class StoreSiteRequest extends FormRequest
                 'start_date' => 'sometimes|date',
                 'delivery_status' => 'sometimes|in:pending,in_progress,completed',
                 'financial_closure_status' => 'sometimes|in:open,closed',
-                'profit_or_loss_ratio' => 'nullable|numeric',
             ];
         }
 

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSiteRequest;
 use App\Http\Resources\SiteResource;
 use App\Models\Material;
 use App\Models\Site;
+use http\Env\Response;
 use Illuminate\Http\Request;
 
 class SiteController extends Controller
@@ -94,33 +95,39 @@ class SiteController extends Controller
         ], 200);
     }
 
-    public function deleteMaterial($siteId, $material_id)
+    public function deleteMaterials(Site $site, Request $request)
     {
-        $site = Site::find($siteId);
+        $materialReferences = $request->input('material_ids', []);
 
-        if (!$site) {
+        if (!is_array($materialReferences) || empty($materialReferences)) {
             return response()->json([
-                'status' => 404,
-                'message' => 'Site not found.'
-            ], 404);
+                'status' => 400,
+                'message' => 'Materials must be provided as a non-empty array.',
+            ], 400);
         }
 
-        $material = Material::where('internal_reference', $material_id)->first();
+        $materials = Material::whereIn('internal_reference', $materialReferences)->get();
 
-        if (!$material) {
+        $existingMaterialIds = $site->materials()->pluck('material_id')->toArray();
+
+        $materialsToDetach = $materials->filter(function ($material) use ($existingMaterialIds) {
+            return in_array($material->id, $existingMaterialIds);
+        });
+
+        if ($materialsToDetach->isEmpty()) {
             return response()->json([
-                'status' => 404,
-                'message' => 'Material not found.'
-            ], 404);
+                'status' => 400,
+                'message' => 'None of the provided materials are associated with the site.',
+            ], 400);
         }
-
-        $site->materials()->detach($material->id);
+        $site->materials()->detach($materialsToDetach->pluck('id')->toArray());
 
         return response()->json([
             'status' => 200,
-            'message' => 'Material successfully detached from the site.'
+            'message' => 'Materials successfully detached from the site.',
         ], 200);
     }
+
 
     public function searchMaterialInSite($siteId, $internal_reference)
     {
@@ -161,13 +168,6 @@ class SiteController extends Controller
         }
 
         $materials = Material::whereIn('internal_reference', $materialReferences)->get();
-
-        if ($materials->isEmpty()) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'No materials found for the provided references.',
-            ], 404);
-        }
 
         $existingMaterialIds = $site->materials()->pluck('material_id')->toArray();
 
