@@ -35,6 +35,8 @@ class SiteResource extends JsonResource
             'delivery_status'             => $this->delivery_status,
             'financial_closure_status'    => $this->financial_closure_status,
             'capital'                     => $this->capital,
+            'sale_price'                  => $this->whenNotNull($this->sale_price),
+            'profit_or_loss_ratio'        => $this->whenNotNull($this->profit_or_loss_ratio),
         ];
     }
 }

@@ -26,7 +26,6 @@ class SiteController extends Controller
 
         return response()->json([
             'status' => 200,
-            'message' => 'Sites retrieved successfully.',
             'data' => SiteResource::collection($sites)->map(function ($site) {
                 return $site->toBasicArray(request());
             })
@@ -150,25 +149,44 @@ class SiteController extends Controller
         ], 404);
     }
 
-    public function addMaterialToSite(Site $site, $material_id)
+    public function addMaterialsToSite(Request $request, Site $site)
     {
-        $material = Material::where('internal_reference', $material_id)->first();
+        $materialReferences = $request->input('material_ids', []);
 
-        if (!$material) {
+        if (!is_array($materialReferences) || empty($materialReferences)) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Materials must be provided as a non-empty array.',
+            ], 400);
+        }
+
+        $materials = Material::whereIn('internal_reference', $materialReferences)->get();
+
+        if ($materials->isEmpty()) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Material not found.'
+                'message' => 'No materials found for the provided references.',
             ], 404);
         }
 
-        if (!$site->materials()->where('material_id', $material->id)->exists()) {
-            $site->materials()->attach($material->id);
+        $existingMaterialIds = $site->materials()->pluck('material_id')->toArray();
+
+        $newMaterials = $materials->filter(function ($material) use ($existingMaterialIds) {
+            return !in_array($material->id, $existingMaterialIds);
+        });
+
+        if ($newMaterials->isEmpty()) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'All provided materials are already associated with the site.',
+            ], 200);
         }
+        $site->materials()->attach($newMaterials->pluck('id')->toArray());
 
         return response()->json([
             'status' => 200,
-            'message' => 'Material added successfully.',
-            'data' => new SiteResource($site->load('materials'))
+            'message' => 'Materials added successfully.',
+            'data' => new SiteResource($site->load('materials')),
         ], 200);
     }
 

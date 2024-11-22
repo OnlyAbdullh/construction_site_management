@@ -6,7 +6,7 @@ use App\Http\Controllers\SiteController;
 // Site-related routes
 Route::prefix('sites')->controller(SiteController::class)->group(function () {
     Route::apiResource('/', SiteController::class)->parameters(['' => 'site']);
-    Route::post('/{site}/materials/{internal_reference}', 'addMaterialToSite');
+    Route::post('/{site}/materials', 'addMaterialsToSite');
     Route::delete('{siteId}/materials/{internal_reference}', 'deleteMaterial');
     Route::get('{siteId}/materials/{internal_reference}', 'searchMaterialInSite');
     Route::match(['get', 'post'], 'search', 'search');
