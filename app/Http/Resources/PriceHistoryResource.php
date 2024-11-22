@@ -20,7 +20,6 @@ class PriceHistoryResource extends JsonResource
             'price'        => $this->price,
             'quantity'     => $this->quantity,
             'entry_date'   => $this->entry_date->toDateString(),
-            'created_at'   => $this->created_at->toDateTimeString(),
         ];
     }
 }

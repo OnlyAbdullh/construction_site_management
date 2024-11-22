@@ -20,4 +20,7 @@ class PriceHistory extends Model
     {
         return $this->morphTo();
     }
+    protected $casts = [
+        'entry_date' => 'datetime',
+    ];
 }
