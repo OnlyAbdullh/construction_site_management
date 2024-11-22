@@ -45,4 +45,32 @@ class Sub_MaterialController extends Controller
             'data' => $subMaterial
         ], 201);
     }
+
+    /**
+     * Delete a sub-material.
+     */
+    public function destroy(Request $request, $sub_material_id)
+    {
+        $validated = $request->validate([
+            'site_id' => 'required|exists:sites,id',
+            'material_id' => 'required|exists:materials,id',
+        ]);
+
+        $isDeleted = $this->subMaterialService->delete(array_merge($validated, [
+            'sub_material_id' => $sub_material_id,
+        ]));
+
+        if ($isDeleted) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Sub-material deleted successfully.',
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to delete sub-material.',
+        ], 400);
+    }
+
 }

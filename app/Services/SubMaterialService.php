@@ -29,7 +29,7 @@ class SubMaterialService
             'cost_price' => $data['capital_price'],
             'sold_price' => $data['sold_price'],
             'unit_measure' => $data['unit_measure'],
-            'entry_date'=>now(),
+
         ]);
 
         PriceHistory::create([
@@ -38,7 +38,7 @@ class SubMaterialService
             'type' => 'capital',
             'price' => $data['capital_price'],
             'quantity' => $data['quantity'],
-            'entry_date' => $data['entry_date'],
+            'entry_date'=>now(),
         ]);
 
         PriceHistory::create([
@@ -47,11 +47,32 @@ class SubMaterialService
             'type' => 'sold',
             'price' => $data['sold_price'],
             'quantity' => $data['quantity'],
-            'entry_date' => $data['entry_date'],
+            'entry_date'=>now(),
         ]);
 
         return $subMaterial;
     }
 
+
+    public function delete(array $data): bool
+    {
+        // Retrieve the related site material
+        $siteMaterial = SiteMaterial::where('site_id', $data['site_id'])
+            ->where('material_id', $data['material_id'])
+            ->firstOrFail();
+
+        // Ensure the sub-material belongs to the retrieved material
+        $subMaterial = SubMaterial::where('id', $data['sub_material_id'])
+            ->where('material_id', $siteMaterial->material_id) // Validate against material_id
+            ->firstOrFail();
+
+        // Remove price history related to the sub-material
+        PriceHistory::where('recordable_id', $subMaterial->id)
+            ->where('recordable_type', SubMaterial::class)
+            ->delete();
+
+        // Delete the sub-material
+        return $subMaterial->delete();
+    }
 
 }
