@@ -38,6 +38,16 @@ class ConcretePourController extends Controller
         ], 201);
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(ConcretePours $concretePour)
+    {
+        // Load related materials
+        $concretePour->load('materials');
+
+        return response()->json($concretePour, 200);
+    }
 
     /**
      * Update the specified resource in storage.
@@ -67,7 +77,6 @@ class ConcretePourController extends Controller
     {
         // Detach materials to clean up pivot table
      //   $concretePour->materials()->detach();
-
         $concretePour->delete();
 
         return response()->json([
@@ -75,5 +84,39 @@ class ConcretePourController extends Controller
         ], 200);
     }
 
+    /**
+     * Attach materials to a concrete pour.
+     */
+    public function attachMaterials(Request $request, ConcretePours $concretePour)
+    {
+        $validated = $request->validate([
+            'materials' => 'required|array',
+            'materials.*' => 'exists:materials,id',
+        ]);
 
+        $concretePour->materials()->attach($validated['materials']);
+
+        return response()->json([
+            'message' => 'Materials attached successfully.',
+            'data' => $concretePour->load('materials'),
+        ], 200);
+    }
+
+    /**
+     * Detach materials from a concrete pour.
+     */
+    public function detachMaterials(Request $request, ConcretePours $concretePour)
+    {
+        $validated = $request->validate([
+            'materials' => 'required|array',
+            'materials.*' => 'exists:materials,id',
+        ]);
+
+        $concretePour->materials()->detach($validated['materials']);
+
+        return response()->json([
+            'message' => 'Materials detached successfully.',
+            'data' => $concretePour->load('materials'),
+        ], 200);
+    }
 }
